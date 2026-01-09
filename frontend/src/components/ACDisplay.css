@@ -1,0 +1,255 @@
+/* AC Display - Digital Gauge Cluster Style */
+.ac-display {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0, 200, 255, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, var(--bg-tertiary, #1a1a25) 0%, var(--bg-secondary, #12121a) 100%);
+  border: 1px solid rgba(0, 200, 255, 0.2);
+  border-radius: 16px;
+  padding: 32px;
+  color: var(--text-primary, #e8e8e8);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Decorative corner accents */
+.ac-display::before,
+.ac-display::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-style: solid;
+  border-color: var(--accent-cool, #00c8ff);
+  opacity: 0.3;
+}
+
+.ac-display::before {
+  top: 8px;
+  left: 8px;
+  border-width: 2px 0 0 2px;
+}
+
+.ac-display::after {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 2px 2px 0;
+}
+
+.ac-display.power-off {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ac-display.power-on {
+  box-shadow:
+    0 0 60px rgba(0, 200, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.ac-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.power-indicator {
+  font-family: 'Orbitron', sans-serif;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.power-indicator.on {
+  background: rgba(0, 200, 255, 0.15);
+  border-color: var(--accent-cool, #00c8ff);
+  color: var(--accent-cool, #00c8ff);
+  box-shadow: 0 0 20px rgba(0, 200, 255, 0.3);
+  animation: glow-pulse 2s infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 200, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 200, 255, 0.5);
+  }
+}
+
+.power-indicator.off {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-muted, #555566);
+}
+
+.ac-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted, #555566);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Temperature Display - Main Gauge */
+.temperature-display {
+  text-align: center;
+  margin: 40px 0;
+  position: relative;
+}
+
+.temp-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 120px;
+  font-weight: 400;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff 0%, var(--accent-cool, #00c8ff) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 60px rgba(0, 200, 255, 0.4);
+  transition: all 0.5s ease;
+}
+
+.power-off .temp-value {
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.temp-unit {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 36px;
+  color: var(--accent-cool, #00c8ff);
+  vertical-align: top;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+.power-off .temp-unit {
+  color: var(--text-muted, #555566);
+}
+
+/* Control Items - Dashboard Widgets */
+.ac-controls {
+  display: flex;
+  justify-content: space-around;
+  margin: 32px 0;
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 140, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+}
+
+.control-item {
+  text-align: center;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.control-item:hover {
+  background: rgba(255, 140, 0, 0.05);
+}
+
+.control-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.3));
+}
+
+.control-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  color: var(--text-muted, #555566);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.control-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  color: var(--accent-warm, #ff8c00);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.power-off .control-value {
+  color: var(--text-muted, #555566);
+}
+
+/* Temperature Range Bar - Fuel Gauge Style */
+.temp-range {
+  margin-top: 24px;
+  padding: 0 8px;
+}
+
+.temp-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.temp-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+    #0088ff 0%,
+    var(--accent-cool, #00c8ff) 30%,
+    #44ff88 50%,
+    var(--accent-warm, #ff8c00) 70%,
+    #ff4466 100%
+  );
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+}
+
+.temp-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(0, 200, 255, 0.4);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid var(--accent-cool, #00c8ff);
+}
+
+.temp-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted, #555566);
+  letter-spacing: 1px;
+}
+
+/* State change animation */
+@keyframes temp-change {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.ac-display.power-on .temperature-display {
+  animation: temp-change 0.5s ease;
+}

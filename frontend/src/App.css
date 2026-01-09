@@ -1,0 +1,306 @@
+/* Car Dashboard Theme - Inspired by luxury vehicle interiors */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Carbon fiber dark theme */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a25;
+
+  /* Amber instrument cluster accents */
+  --accent-warm: #ff8c00;
+  --accent-warm-glow: rgba(255, 140, 0, 0.4);
+
+  /* Cool blue for AC elements */
+  --accent-cool: #00c8ff;
+  --accent-cool-glow: rgba(0, 200, 255, 0.3);
+
+  /* Text colors */
+  --text-primary: #e8e8e8;
+  --text-secondary: #888899;
+  --text-muted: #555566;
+
+  /* Status colors */
+  --status-success: #22cc88;
+  --status-error: #ff4466;
+
+  /* Carbon fiber pattern */
+  --carbon-pattern: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.02) 2px,
+    rgba(255, 255, 255, 0.02) 4px
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-primary);
+  background-image:
+    var(--carbon-pattern),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 140, 0, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(0, 200, 255, 0.05) 0%, transparent 40%);
+  min-height: 100vh;
+  font-family: 'Rajdhani', sans-serif;
+  color: var(--text-primary);
+}
+
+#root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header - Instrument cluster style */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 40px;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255, 140, 0, 0.2);
+}
+
+.app-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  margin: 0;
+  background: linear-gradient(90deg, var(--accent-warm) 0%, #ffaa44 50%, var(--accent-warm) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  text-shadow: 0 0 30px var(--accent-warm-glow);
+}
+
+.connection-status {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.connection-status::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.connection-status.connected {
+  border-color: var(--status-success);
+  color: var(--status-success);
+}
+
+.connection-status.connected::before {
+  background: var(--status-success);
+  box-shadow: 0 0 10px var(--status-success);
+  animation: pulse-dot 2s infinite;
+}
+
+.connection-status.disconnected {
+  border-color: var(--status-error);
+  color: var(--status-error);
+}
+
+.connection-status.disconnected::before {
+  background: var(--status-error);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Main layout */
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding: 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.right-panel {
+  animation: slideInRight 0.6s ease-out 0.2s both;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Voice section */
+.voice-section {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+
+/* Demo hints - dashboard info panel style */
+.demo-hints {
+  background:
+    linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border: 1px solid rgba(255, 140, 0, 0.15);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-hints::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-warm), transparent);
+}
+
+.hints-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--accent-warm);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.demo-hints ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-hints li {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding-left: 20px;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.demo-hints li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--accent-cool);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.demo-hints li:hover {
+  color: var(--text-primary);
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(0deg, var(--bg-secondary) 0%, transparent 100%);
+}
+
+.app-footer p {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .app-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .app-header h1 {
+    font-size: 18px;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-warm);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cool);
+}
