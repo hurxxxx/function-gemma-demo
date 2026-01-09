@@ -26,6 +26,8 @@ class ACState:
     """에어컨 상태"""
     power: bool = False
     temperature: int = 24  # 16-30
+    indoor_temperature: int = 26  # 실내 온도
+    outdoor_temperature: int = 32  # 외기 온도
     fan_speed: FanSpeed = FanSpeed.AUTO
     mode: ACMode = ACMode.COOLING
 
@@ -33,6 +35,8 @@ class ACState:
         return {
             "power": self.power,
             "temperature": self.temperature,
+            "indoor_temperature": self.indoor_temperature,
+            "outdoor_temperature": self.outdoor_temperature,
             "fan_speed": self.fan_speed.value,
             "mode": self.mode.value
         }
@@ -43,6 +47,8 @@ class ACController:
 
     MIN_TEMP = 16
     MAX_TEMP = 30
+    MIN_ENV_TEMP = -20
+    MAX_ENV_TEMP = 50
 
     def __init__(self, on_state_change: Callable[[dict], Any] = None):
         self.state = ACState()
@@ -57,6 +63,8 @@ class ACController:
         """현재 설정된 온도 조회"""
         return {
             "temperature": self.state.temperature,
+            "indoor_temperature": self.state.indoor_temperature,
+            "outdoor_temperature": self.state.outdoor_temperature,
             "power": self.state.power
         }
 
@@ -147,6 +155,34 @@ class ACController:
             "message": "에어컨을 껐습니다."
         }
 
+    def update_environment(
+        self,
+        indoor_temperature: int | None = None,
+        outdoor_temperature: int | None = None
+    ) -> dict:
+        """실내/외기 온도 업데이트"""
+        updated = False
+
+        if indoor_temperature is not None:
+            self.state.indoor_temperature = self._clamp_environment_temperature(indoor_temperature)
+            updated = True
+
+        if outdoor_temperature is not None:
+            self.state.outdoor_temperature = self._clamp_environment_temperature(outdoor_temperature)
+            updated = True
+
+        if updated:
+            self._notify_change()
+
+        return {
+            "success": updated,
+            "indoor_temperature": self.state.indoor_temperature,
+            "outdoor_temperature": self.state.outdoor_temperature
+        }
+
+    def _clamp_environment_temperature(self, temperature: int) -> int:
+        return max(self.MIN_ENV_TEMP, min(self.MAX_ENV_TEMP, temperature))
+
     def execute_function(self, function_name: str, parameters: dict = None) -> dict:
         """함수 이름과 파라미터로 함수 실행"""
         parameters = parameters or {}
@@ -173,7 +209,7 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_current_temperature",
-            "description": "Get the current temperature setting of the air conditioner. Use this when user asks about current temperature or before adjusting temperature based on context.",
+            "description": "Get the current temperature setting of the air conditioner, including indoor/outdoor temperatures. Use this when user asks about current temperature or before adjusting temperature based on context.",
             "parameters": {
                 "type": "object",
                 "properties": {},

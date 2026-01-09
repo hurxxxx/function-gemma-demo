@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 export interface ACState {
   power: boolean;
   temperature: number;
+  indoor_temperature: number;
+  outdoor_temperature: number;
   fan_speed: string;
   mode: string;
 }
@@ -16,6 +18,8 @@ export function useWebSocket(url: string) {
   const [state, setState] = useState<ACState>({
     power: false,
     temperature: 24,
+    indoor_temperature: 26,
+    outdoor_temperature: 32,
     fan_speed: 'auto',
     mode: 'cooling',
   });
@@ -34,6 +38,10 @@ export function useWebSocket(url: string) {
     };
 
     ws.onmessage = (event) => {
+      if (typeof event.data === 'string' && event.data.trim() === 'pong') {
+        return;
+      }
+
       try {
         const data: WebSocketMessage = JSON.parse(event.data);
         if (data.type === 'state_update' && data.state) {

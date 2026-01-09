@@ -2,11 +2,15 @@ import { useState, useCallback } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { ACDisplay } from './components/ACDisplay';
 import { VoiceRecorder } from './components/VoiceRecorder';
-import { CommandLog, LogEntry } from './components/CommandLog';
+import { ManualControls } from './components/ManualControls';
+import { CommandLog, type LogEntry } from './components/CommandLog';
 import './App.css';
 
 function App() {
-  const { state, connected } = useWebSocket('ws://localhost:8000/ws');
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  // Vite 프록시를 통해 WebSocket 연결 (포트 포워딩 호환)
+  const wsUrl = `${wsProtocol}://${window.location.host}/ws`;
+  const { state, connected } = useWebSocket(wsUrl);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [logId, setLogId] = useState(0);
 
@@ -48,6 +52,11 @@ function App() {
         <div className="left-panel">
           <ACDisplay state={state} />
 
+          <ManualControls
+            state={state}
+            disabled={!connected}
+          />
+
           <div className="voice-section">
             <VoiceRecorder
               onResult={handleResult}
@@ -60,6 +69,7 @@ function App() {
             <ul>
               <li>"온도 올려줘" / "온도 내려줘"</li>
               <li>"오늘 날씨가 덥네"</li>
+              <li>"아이들이 땀이 나네"</li>
               <li>"여름철 적정 온도로 맞춰줘"</li>
               <li>"바람 세게 해줘"</li>
               <li>"에어컨 꺼줘"</li>

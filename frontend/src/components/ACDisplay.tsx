@@ -1,4 +1,4 @@
-import { ACState } from '../hooks/useWebSocket';
+import type { ACState } from '../hooks/useWebSocket';
 import './ACDisplay.css';
 
 interface ACDisplayProps {
@@ -39,6 +39,21 @@ export function ACDisplay({ state }: ACDisplayProps) {
       <div className="temperature-display">
         <span className="temp-value">{state.temperature}</span>
         <span className="temp-unit">°C</span>
+      </div>
+
+      <div className="environment-display">
+        <div className="environment-item">
+          <div className="environment-label">실내</div>
+          <div className="environment-value">
+            {state.indoor_temperature}°C
+          </div>
+        </div>
+        <div className="environment-item">
+          <div className="environment-label">외기</div>
+          <div className="environment-value">
+            {state.outdoor_temperature}°C
+          </div>
+        </div>
       </div>
 
       <div className="ac-controls">

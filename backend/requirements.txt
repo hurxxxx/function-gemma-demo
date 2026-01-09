@@ -1,8 +1,12 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 websockets==14.1
-transformers==4.47.1
-torch==2.5.1
+transformers==4.57.3
+accelerate==1.12.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.6.0+cpu
 openai-whisper==20240930
 python-multipart==0.0.20
 pydantic==2.10.4
+langid==1.1.6
+sentencepiece==0.2.0

@@ -1,0 +1,163 @@
+.manual-controls {
+  background:
+    linear-gradient(135deg, rgba(0, 200, 255, 0.06) 0%, rgba(255, 140, 0, 0.04) 100%),
+    var(--bg-secondary, #12121a);
+  border: 1px solid rgba(0, 200, 255, 0.2);
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.manual-controls::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cool, #00c8ff), transparent);
+}
+
+.manual-header {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-cool, #00c8ff);
+  margin-bottom: 18px;
+}
+
+.manual-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.manual-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-secondary, #888899);
+  text-transform: uppercase;
+}
+
+.toggle-button {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #888899);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button.on {
+  color: var(--accent-cool, #00c8ff);
+  border-color: rgba(0, 200, 255, 0.5);
+  box-shadow: 0 0 12px rgba(0, 200, 255, 0.2);
+}
+
+.toggle-button.off {
+  color: var(--text-muted, #555566);
+}
+
+.toggle-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stepper button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary, #e8e8e8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stepper button:hover:not(:disabled) {
+  border-color: rgba(0, 200, 255, 0.5);
+  color: var(--accent-cool, #00c8ff);
+}
+
+.stepper button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepper-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #e8e8e8);
+  min-width: 64px;
+  text-align: center;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button-group button {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #888899);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button-group button.active {
+  color: var(--accent-warm, #ff8c00);
+  border-color: rgba(255, 140, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+}
+
+.button-group button:hover:not(:disabled) {
+  color: var(--text-primary, #e8e8e8);
+  border-color: rgba(0, 200, 255, 0.4);
+}
+
+.button-group button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.manual-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 16px 0;
+}
+
+.manual-error {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--status-error, #ff4466);
+}

@@ -71,6 +71,12 @@ class CommandResponse(BaseModel):
     raw_output: str | None
 
 
+class EnvironmentUpdate(BaseModel):
+    """실내/외기 온도 업데이트"""
+    indoor_temperature: int | None = None
+    outdoor_temperature: int | None = None
+
+
 @app.on_event("startup")
 async def startup_event():
     """서버 시작 시 모델 로드"""
@@ -102,7 +108,10 @@ async def process_text_command(command: TextCommand):
     model = get_model()
 
     # 함수 호출 생성
-    generation_result = model.generate_function_call(command.text)
+    generation_result = model.generate_function_call(
+        command.text,
+        context=ac_controller.state.to_dict()
+    )
 
     if not generation_result["success"]:
         return CommandResponse(
@@ -162,7 +171,10 @@ async def process_voice_command(audio: UploadFile = File(...)):
 
     # 텍스트 명령 처리
     model = get_model()
-    generation_result = model.generate_function_call(recognized_text)
+    generation_result = model.generate_function_call(
+        recognized_text,
+        context=ac_controller.state.to_dict()
+    )
 
     if not generation_result["success"]:
         return {
@@ -243,6 +255,21 @@ async def set_fan(speed: str):
 async def set_mode(mode: str):
     """모드 설정"""
     return ac_controller.set_mode(mode)
+
+
+@app.post("/environment")
+async def update_environment(update: EnvironmentUpdate):
+    """실내/외기 온도 업데이트"""
+    if update.indoor_temperature is None and update.outdoor_temperature is None:
+        raise HTTPException(
+            status_code=400,
+            detail="indoor_temperature 또는 outdoor_temperature 중 하나 이상 필요합니다."
+        )
+
+    return ac_controller.update_environment(
+        indoor_temperature=update.indoor_temperature,
+        outdoor_temperature=update.outdoor_temperature
+    )
 
 
 if __name__ == "__main__":
