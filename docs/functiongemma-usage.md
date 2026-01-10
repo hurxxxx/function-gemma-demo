@@ -13,17 +13,10 @@
 - **Gated 모델**이므로 HF 로그인/라이선스 승인 필요.
 
 ## 다국어 입력 처리 (현재 프로젝트 설정)
-- 사용자 입력을 **로컬 번역 모델로 영어로 변환**한 뒤 FunctionGemma에 전달함.
+- 사용자 입력을 **한국어 그대로 FunctionGemma에 전달**함.
 - **규칙 기반/키워드 기반 후처리는 사용하지 않음**(모델 출력만 사용).
-- 번역 사용 여부:
-  - `FG_TRANSLATION_ENABLED=1` (기본값: 1)
-  - `FG_TRANSLATION_ENABLED=0` 으로 번역 비활성화 가능
-- 기본 번역 모델: `Helsinki-NLP/opus-mt-mul-en` (언어별 전용 모델 우선 사용)
-- 번역 관련 환경 변수:
-  - `FG_TRANSLATION_MODEL` (기본값: `Helsinki-NLP/opus-mt-mul-en`)
-  - `FG_TRANSLATION_MODEL_MAP` (JSON, 언어 코드별 모델 지정)
-  - `FG_TRANSLATION_MAX_TOKENS` (기본값: 128)
-- 270m-it 모델은 일부 문맥에서 오동작 가능성이 있어, **정확도를 더 올리려면 파인튜닝 또는 더 큰 모델**을 고려해야 함.
+- 270m-it 모델은 한국어에서 일부 문맥 오동작이 있어, **정확도를 더 올리려면 파인튜닝(LoRA) 권장**.
+- 파인튜닝 가이드: `docs/functiongemma-finetune.md`
 
 ## 필수 사용 패턴
 ### 1) tools(JSON schema) 정의

@@ -67,7 +67,9 @@ class CommandResponse(BaseModel):
     success: bool
     input_text: str
     function_call: dict | None
+    function_calls: list[dict] | None = None
     result: dict | None
+    results: list[dict] | None = None
     raw_output: str | None
 
 
@@ -122,19 +124,30 @@ async def process_text_command(command: TextCommand):
             raw_output=generation_result["raw_output"]
         )
 
-    function_call = generation_result["function_call"]
+    function_calls = generation_result.get("function_calls") or []
+    if not function_calls and generation_result.get("function_call"):
+        function_calls = [generation_result["function_call"]]
 
     # 함수 실행
-    result = ac_controller.execute_function(
-        function_call["function_name"],
-        function_call["parameters"]
-    )
+    results = []
+    for function_call in function_calls:
+        results.append(
+            ac_controller.execute_function(
+                function_call["function_name"],
+                function_call["parameters"]
+            )
+        )
+
+    function_call = function_calls[0] if function_calls else None
+    result = results[0] if results else None
 
     return CommandResponse(
         success=True,
         input_text=command.text,
         function_call=function_call,
+        function_calls=function_calls,
         result=result,
+        results=results,
         raw_output=generation_result["raw_output"]
     )
 
@@ -185,20 +198,31 @@ async def process_voice_command(audio: UploadFile = File(...)):
             "raw_output": generation_result["raw_output"]
         }
 
-    function_call = generation_result["function_call"]
+    function_calls = generation_result.get("function_calls") or []
+    if not function_calls and generation_result.get("function_call"):
+        function_calls = [generation_result["function_call"]]
 
     # 함수 실행
-    result = ac_controller.execute_function(
-        function_call["function_name"],
-        function_call["parameters"]
-    )
+    results = []
+    for function_call in function_calls:
+        results.append(
+            ac_controller.execute_function(
+                function_call["function_name"],
+                function_call["parameters"]
+            )
+        )
+
+    function_call = function_calls[0] if function_calls else None
+    result = results[0] if results else None
 
     return {
         "success": True,
         "transcription": recognized_text,
         "detected_language": transcription.get("language", "unknown"),
         "function_call": function_call,
+        "function_calls": function_calls,
         "result": result,
+        "results": results,
         "raw_output": generation_result["raw_output"]
     }
 

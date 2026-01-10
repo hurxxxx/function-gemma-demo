@@ -9,7 +9,6 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 import torch
 
 from ac_controller import AC_FUNCTION_SCHEMAS
-from translation import get_translator
 
 
 class FunctionGemmaModel:
@@ -19,7 +18,6 @@ class FunctionGemmaModel:
         self.model_name = model_name
         self.processor = None
         self.model = None
-        self.translator = get_translator()
         self.allowed_functions = {
             schema["function"]["name"]
             for schema in AC_FUNCTION_SCHEMAS
@@ -57,36 +55,50 @@ class FunctionGemmaModel:
         FunctionGemma 출력 형식:
         <start_function_call>call:function_name{param:<escape>value<escape>}<end_function_call>
         """
-        segment = self._extract_function_call_segment(output)
-        if segment:
+        calls = self.parse_function_calls(output)
+        return calls[0] if calls else None
+
+    def parse_function_calls(self, output: str) -> list[dict]:
+        calls: list[dict] = []
+
+        segments = re.findall(
+            r"<start_(?:of_)?function_call>(.*?)<end_(?:of_)?function_call>",
+            output,
+            flags=re.DOTALL,
+        )
+        for segment in segments:
             parsed = self._parse_function_segment(segment)
             if parsed:
-                return parsed
+                calls.append(parsed)
 
-        # 간단한 형식도 시도: call:function_name{...}
-        match = re.search(r"call:([a-zA-Z_]\w*)\{([^}]*)\}", output)
-        if match:
-            return {
-                "function_name": match.group(1),
-                "parameters": self._parse_parameters(match.group(2))
-            }
+        if calls:
+            return calls
 
-        # 괄호 형식도 시도: call:function_name(...)
-        match = re.search(r"call:([a-zA-Z_]\w*)\(([^)]*)\)", output)
-        if match:
-            return {
-                "function_name": match.group(1),
-                "parameters": self._parse_parameters(match.group(2))
-            }
+        for name, params in re.findall(r"call:([a-zA-Z_]\w*)\{([^}]*)\}", output):
+            calls.append({
+                "function_name": name,
+                "parameters": self._parse_parameters(params),
+            })
 
-        # JSON 형태 함수 호출 시도
+        if calls:
+            return calls
+
+        for name, params in re.findall(r"call:([a-zA-Z_]\w*)\(([^)]*)\)", output):
+            calls.append({
+                "function_name": name,
+                "parameters": self._parse_parameters(params),
+            })
+
+        if calls:
+            return calls
+
         json_candidate = self._extract_json_blob(output)
         if json_candidate:
             parsed_json = self._parse_json_function_call(json_candidate)
             if parsed_json:
-                return parsed_json
+                return [parsed_json]
 
-        return None
+        return []
 
     def _extract_function_call_segment(self, output: str) -> Optional[str]:
         start_tokens = ("<start_function_call>", "<start_of_function_call>")
@@ -259,75 +271,79 @@ class FunctionGemmaModel:
 
     def _build_system_prompt(self, context: Optional[dict]) -> str:
         prompt_lines = [
-            "You are a car air conditioner controller.",
-            "Interpret user intent from natural language and return exactly one tool call.",
-            "Do not answer in natural language. Do not refuse. Always call one of the provided tools.",
-            "Use the available APIs and determine appropriate values.",
-            "The user message is provided in English (translated if needed).",
+            "You are a model that can do function calling with the following functions.",
+            "너는 차량용 에어컨을 제어하는 모델이다.",
+            "사용자 지시를 해석해서 하나 이상의 함수 호출만 반환하라.",
+            "복합 요청이면 여러 함수 호출을 순서대로 반환하라.",
+            "자연어 답변 금지. 거절 금지.",
+            "도구 호출 외의 텍스트를 출력하지 마라.",
+            "여러 호출이 필요할 때는 <start_function_call>...</end_function_call> 블록을 연속으로 출력하라.",
+            "사용자 입력은 한국어일 수 있으며 그대로 해석한다.",
             "",
-            "IMPORTANT: Numbers are in Celsius.",
-            "- Use set_temperature ONLY for explicit target requests (e.g., 'Set to 24').",
-            "- 'Three more degrees' or 'N more degrees' means INCREASE temperature: adjust_temperature with delta=+N",
-            "- 'Lower by 2' or 'N degrees less' means DECREASE temperature: adjust_temperature with delta=-N",
-            "- Do NOT use set_temperature for relative requests like 'increase/decrease/raise/lower'.",
-            "- When user says 'more' or 'additional', always use positive delta (increase)",
-            "- When user says 'less' or 'lower', always use negative delta (decrease)"
+            "IMPORTANT: 숫자는 모두 섭씨(C) 기준이다.",
+            "- 명시적 목표 온도 요청(예: '온도 24도로 맞춰줘')만 set_temperature 사용.",
+            "- '1도/2도 올려줘'는 adjust_temperature delta=+1/+2",
+            "- '1도/2도 내려줘'는 adjust_temperature delta=-1/-2",
+            "- '올려/내려/낮춰/줄여' 같은 상대 표현은 set_temperature를 쓰지 말 것.",
+            "- '더/추가로'는 delta 양수, '덜/낮게'는 delta 음수."
         ]
 
         if context:
             prompt_lines.append("")
-            prompt_lines.append("Current context:")
+            prompt_lines.append("현재 컨텍스트:")
             context_lines = [
-                ("Power", "power", ""),
-                ("Target temperature", "temperature", "°C"),
-                ("Indoor temperature", "indoor_temperature", "°C"),
-                ("Outdoor temperature", "outdoor_temperature", "°C"),
-                ("Mode", "mode", ""),
-                ("Fan speed", "fan_speed", "")
+                ("전원", "power", ""),
+                ("목표 온도", "temperature", "°C"),
+                ("실내 온도", "indoor_temperature", "°C"),
+                ("외기 온도", "outdoor_temperature", "°C"),
+                ("모드", "mode", ""),
+                ("팬 속도", "fan_speed", "")
             ]
             for label, key, unit in context_lines:
                 value = context.get(key)
                 if value is None:
                     continue
                 if key == "power":
-                    value = "on" if value else "off"
+                    value = "켜짐" if value else "꺼짐"
                 prompt_lines.append(f"- {label}: {value}{unit}")
 
         prompt_lines.extend([
             "",
-            "Guidelines:",
-            "- If the user asks for the current temperature (e.g., 'current temperature', 'what's the temperature now'), use get_current_temperature().",
-            "- Do NOT change settings for current temperature questions.",
-            "- Use set_temperature for explicit targets, adjust_temperature for relative changes.",
-            "- If the user feels hot/warm or mentions sweating/stuffy air, lower the target by 1-3°C.",
-            "- If the user feels cold or mentions shivering, raise the target by 1-3°C.",
-            "- For comfortable/optimal, use 24-26°C when outdoor >= 26°C, 26-28°C when outdoor <= 15°C, otherwise 24-25°C.",
-            "- Keep temperature within 16-30°C.",
-            "- If airflow strength is requested, use set_fan_speed(low/medium/high/auto).",
-            "- Map strong/max -> high, weak/low -> low, medium/normal -> medium, auto/automatic -> auto.",
-            "- If the input is only about airflow, do not change temperature or mode.",
-            "- If a mode is requested, use set_mode(cooling/heating/auto/ventilation).",
-            "- If power on/off is requested, use power_on() or power_off().",
-            "- Treat implicit statements (e.g., 'It's hot', 'Kids are sweating') as requests to adjust the AC.",
+            "가이드라인:",
+            "- '현재 온도/지금 온도/몇 도야'는 get_current_temperature().",
+            "- 현재 온도 질문에는 설정을 바꾸지 말 것.",
+            "- 목표 온도는 set_temperature, 상대 변화는 adjust_temperature.",
+            "- 더움/땀/후덥지근함은 1~3도 낮춤, 추움/춥다/떨림은 1~3도 높임.",
+            "- 쾌적/적정은 외기 26도 이상이면 24~26, 외기 15도 이하이면 26~28, 그 외 24~25.",
+            "- 온도는 16~30도 범위 유지.",
+            "- 바람 세기 요청은 set_fan_speed(low/medium/high/auto).",
+            "- 강/최대 -> high, 약/낮게 -> low, 중간/보통 -> medium, 자동 -> auto.",
+            "- 바람만 요청이면 온도/모드 변경 금지.",
+            "- 모드 요청은 set_mode(cooling/heating/auto/ventilation).",
+            "- 전원 요청은 power_on()/power_off().",
+            "- 암시적 표현(예: '덥다', '아이들이 땀이 나')도 조절 요청으로 처리.",
             "",
             "Examples:",
-            "User: Make the fan stronger",
+            "User: 바람 세게 해줘",
             "Tool call: <start_function_call>call:set_fan_speed{speed:<escape>high<escape>}<end_function_call>",
-            "User: Increase the temperature by 2 degrees",
+            "User: 온도 2도 올려줘",
             "Tool call: <start_function_call>call:adjust_temperature{delta:<escape>2<escape>}<end_function_call>",
-            "User: Lower the temperature by 1 degree",
+            "User: 온도 1도 내려줘",
             "Tool call: <start_function_call>call:adjust_temperature{delta:<escape>-1<escape>}<end_function_call>",
-            "User: Set the temperature to 23 degrees",
+            "User: 온도 23도로 맞춰줘",
             "Tool call: <start_function_call>call:set_temperature{temperature:<escape>23<escape>}<end_function_call>",
-            "User: What's the current temperature?",
+            "User: 지금 온도 알려줘",
             "Tool call: <start_function_call>call:get_current_temperature{}<end_function_call>",
-            "User: Make the fan weaker",
+            "User: 바람 약하게",
             "Tool call: <start_function_call>call:set_fan_speed{speed:<escape>low<escape>}<end_function_call>",
-            "User: Fan to auto",
+            "User: 팬 자동으로",
             "Tool call: <start_function_call>call:set_fan_speed{speed:<escape>auto<escape>}<end_function_call>",
-            "User: Medium fan speed",
+            "User: 팬 중간",
             "Tool call: <start_function_call>call:set_fan_speed{speed:<escape>medium<escape>}<end_function_call>",
-            "Return only the tool call."
+            "User: 에어컨 켜고 바람 세게 해줘",
+            "Tool call: <start_function_call>call:power_on{}<end_function_call>\n"
+            "<start_function_call>call:set_fan_speed{speed:<escape>high<escape>}<end_function_call>",
+            "Return only the tool call blocks."
         ])
 
         return "\n".join(prompt_lines)
@@ -336,7 +352,7 @@ class FunctionGemmaModel:
         return [
             {
                 "role": "user",
-                "content": "Set the temperature to 23 degrees"
+                "content": "온도 23도로 맞춰줘"
             },
             {
                 "role": "assistant",
@@ -344,7 +360,7 @@ class FunctionGemmaModel:
             },
             {
                 "role": "user",
-                "content": "Set the temperature to 26 degrees"
+                "content": "온도 26도로 설정해줘"
             },
             {
                 "role": "assistant",
@@ -352,7 +368,7 @@ class FunctionGemmaModel:
             },
             {
                 "role": "user",
-                "content": "Increase the temperature by 2 degrees"
+                "content": "온도 2도 올려줘"
             },
             {
                 "role": "assistant",
@@ -360,7 +376,7 @@ class FunctionGemmaModel:
             },
             {
                 "role": "user",
-                "content": "Lower the temperature by 1 degree"
+                "content": "온도 1도 내려줘"
             },
             {
                 "role": "assistant",
@@ -368,11 +384,38 @@ class FunctionGemmaModel:
             },
             {
                 "role": "user",
-                "content": "What's the current temperature?"
+                "content": "지금 온도 알려줘"
             },
             {
                 "role": "assistant",
                 "content": "<start_function_call>call:get_current_temperature{}<end_function_call>"
+            },
+            {
+                "role": "user",
+                "content": "현재 온도 알려줘"
+            },
+            {
+                "role": "assistant",
+                "content": "<start_function_call>call:get_current_temperature{}<end_function_call>"
+            },
+            {
+                "role": "user",
+                "content": "온도 몇 도야?"
+            },
+            {
+                "role": "assistant",
+                "content": "<start_function_call>call:get_current_temperature{}<end_function_call>"
+            },
+            {
+                "role": "user",
+                "content": "에어컨 켜고 바람 세게 해줘"
+            },
+            {
+                "role": "assistant",
+                "content": (
+                    "<start_function_call>call:power_on{}<end_function_call>\n"
+                    "<start_function_call>call:set_fan_speed{speed:<escape>high<escape>}<end_function_call>"
+                )
             },
         ]
 
@@ -384,6 +427,7 @@ class FunctionGemmaModel:
             {
                 "raw_output": str,
                 "function_call": {"function_name": str, "parameters": dict} or None,
+                "function_calls": [{"function_name": str, "parameters": dict}, ...],
                 "success": bool
             }
         """
@@ -391,10 +435,6 @@ class FunctionGemmaModel:
             self.load()
 
         normalized_input = user_input
-        if self.translator:
-            translated_input, _translation_info = self.translator.translate(user_input)
-            if translated_input:
-                normalized_input = translated_input
 
         # 시스템 프롬프트 구성
         system_prompt = self._build_system_prompt(context)
@@ -446,13 +486,19 @@ class FunctionGemmaModel:
         )
 
         # 함수 호출 파싱
-        function_call = self.parse_function_call(raw_output)
-        function_call = self._apply_overrides(normalized_input, function_call, context)
+        function_calls = []
+        for call in self.parse_function_calls(raw_output):
+            validated = self._apply_overrides(normalized_input, call, context)
+            if validated:
+                function_calls.append(validated)
+
+        function_call = function_calls[0] if function_calls else None
 
         return {
             "raw_output": raw_output,
             "function_call": function_call,
-            "success": function_call is not None
+            "function_calls": function_calls,
+            "success": bool(function_calls)
         }
 
 

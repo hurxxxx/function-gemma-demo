@@ -14,3 +14,4 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 </frontend_aesthetics>
 
 FunctionGemma usage notes: [docs/functiongemma-usage.md](docs/functiongemma-usage.md)
+FunctionGemma finetune guide: [docs/functiongemma-finetune.md](docs/functiongemma-finetune.md)

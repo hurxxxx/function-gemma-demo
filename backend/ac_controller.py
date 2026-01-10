@@ -209,7 +209,7 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_current_temperature",
-            "description": "Get the current temperature setting of the air conditioner, including indoor/outdoor temperatures. Use this when user asks about current temperature or before adjusting temperature based on context.",
+            "description": "현재 설정 온도와 실내/외기 온도를 조회합니다. (Get current target/indoor/outdoor temperatures)",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -221,13 +221,13 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "set_temperature",
-            "description": "Set the air conditioner to a specific temperature (16-30 degrees Celsius).",
+            "description": "목표 온도를 설정합니다. (섭씨 16-30도)",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "temperature": {
                         "type": "integer",
-                        "description": "The target temperature in Celsius (16-30)"
+                        "description": "목표 온도 (섭씨 16-30)"
                     }
                 },
                 "required": ["temperature"]
@@ -238,13 +238,13 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "adjust_temperature",
-            "description": "Adjust temperature by a relative amount. Use positive delta to increase, negative to decrease. For simple 'raise/lower temperature' requests, use delta of +2 or -2.",
+            "description": "온도를 상대값으로 조절합니다. 양수는 올림, 음수는 내림.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "delta": {
                         "type": "integer",
-                        "description": "Temperature change amount (positive to increase, negative to decrease)"
+                        "description": "온도 변화값 (양수: 올림, 음수: 내림)"
                     }
                 },
                 "required": ["delta"]
@@ -255,14 +255,14 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "set_fan_speed",
-            "description": "Set the fan speed of the air conditioner.",
+            "description": "팬 속도를 설정합니다.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "speed": {
                         "type": "string",
                         "enum": ["low", "medium", "high", "auto"],
-                        "description": "Fan speed level"
+                        "description": "팬 속도 (low/medium/high/auto)"
                     }
                 },
                 "required": ["speed"]
@@ -273,14 +273,14 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "set_mode",
-            "description": "Set the operating mode of the air conditioner.",
+            "description": "에어컨 모드를 설정합니다.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "mode": {
                         "type": "string",
                         "enum": ["cooling", "heating", "auto", "ventilation"],
-                        "description": "Operating mode"
+                        "description": "모드 (cooling/heating/auto/ventilation)"
                     }
                 },
                 "required": ["mode"]
@@ -291,7 +291,7 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "power_on",
-            "description": "Turn on the air conditioner.",
+            "description": "에어컨 전원을 켭니다.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -303,7 +303,7 @@ AC_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "power_off",
-            "description": "Turn off the air conditioner.",
+            "description": "에어컨 전원을 끕니다.",
             "parameters": {
                 "type": "object",
                 "properties": {},
