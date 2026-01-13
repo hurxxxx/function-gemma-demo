@@ -1,5 +1,6 @@
 """
-FunctionGemma 차량용 에어컨 음성 제어 API
+FunctionGemma 홈 IoT 음성 제어 API
+7개 기기: 에어컨, TV, 거실등, 로봇청소기, 오디오, 전동커튼, 환풍기
 """
 import asyncio
 import json
@@ -8,15 +9,15 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, H
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ac_controller import ACController, ACState
+from home_controller import HomeController, HomeState
 from function_gemma import get_model
 from speech_to_text import get_stt
 
 
 app = FastAPI(
-    title="FunctionGemma AC Controller",
-    description="차량용 에어컨 음성 제어 데모 API",
-    version="1.0.0"
+    title="FunctionGemma Home IoT Controller",
+    description="홈 IoT 음성 제어 데모 API",
+    version="2.0.0"
 )
 
 # CORS 설정 (개발용)
@@ -49,12 +50,12 @@ async def broadcast_state(state: dict):
 
 
 def on_state_change(state: dict):
-    """에어컨 상태 변경 콜백"""
+    """홈 상태 변경 콜백"""
     asyncio.create_task(broadcast_state(state))
 
 
-# 에어컨 컨트롤러 인스턴스
-ac_controller = ACController(on_state_change=on_state_change)
+# 홈 컨트롤러 인스턴스
+home_controller = HomeController(on_state_change=on_state_change)
 
 
 class TextCommand(BaseModel):
@@ -73,12 +74,6 @@ class CommandResponse(BaseModel):
     raw_output: str | None
 
 
-class EnvironmentUpdate(BaseModel):
-    """실내/외기 온도 업데이트"""
-    indoor_temperature: int | None = None
-    outdoor_temperature: int | None = None
-
-
 @app.on_event("startup")
 async def startup_event():
     """서버 시작 시 모델 로드"""
@@ -90,13 +85,13 @@ async def startup_event():
 @app.get("/")
 async def root():
     """헬스 체크"""
-    return {"status": "ok", "message": "FunctionGemma AC Controller API"}
+    return {"status": "ok", "message": "FunctionGemma Home IoT Controller API"}
 
 
 @app.get("/state")
 async def get_state():
-    """현재 에어컨 상태 조회"""
-    return ac_controller.state.to_dict()
+    """현재 홈 상태 조회"""
+    return home_controller.state.to_dict()
 
 
 @app.post("/command/text", response_model=CommandResponse)
@@ -105,14 +100,14 @@ async def process_text_command(command: TextCommand):
     텍스트 명령 처리
 
     자연어 텍스트를 받아서 FunctionGemma로 함수 호출 생성,
-    에어컨 상태 변경 후 결과 반환
+    홈 기기 상태 변경 후 결과 반환
     """
     model = get_model()
 
     # 함수 호출 생성
     generation_result = model.generate_function_call(
         command.text,
-        context=ac_controller.state.to_dict()
+        context=home_controller.state.to_dict()
     )
 
     if not generation_result["success"]:
@@ -128,11 +123,11 @@ async def process_text_command(command: TextCommand):
     if not function_calls and generation_result.get("function_call"):
         function_calls = [generation_result["function_call"]]
 
-    # 함수 실행
+    # 함수 실행 (멀티턴: 여러 함수 순차 실행)
     results = []
     for function_call in function_calls:
         results.append(
-            ac_controller.execute_function(
+            home_controller.execute_function(
                 function_call["function_name"],
                 function_call["parameters"]
             )
@@ -160,7 +155,7 @@ async def process_voice_command(audio: UploadFile = File(...)):
     음성 파일을 받아서:
     1. Whisper로 텍스트 변환
     2. FunctionGemma로 함수 호출 생성
-    3. 에어컨 상태 변경
+    3. 홈 기기 상태 변경
     """
     # 음성 -> 텍스트
     stt = get_stt("base")
@@ -186,7 +181,7 @@ async def process_voice_command(audio: UploadFile = File(...)):
     model = get_model()
     generation_result = model.generate_function_call(
         recognized_text,
-        context=ac_controller.state.to_dict()
+        context=home_controller.state.to_dict()
     )
 
     if not generation_result["success"]:
@@ -202,11 +197,11 @@ async def process_voice_command(audio: UploadFile = File(...)):
     if not function_calls and generation_result.get("function_call"):
         function_calls = [generation_result["function_call"]]
 
-    # 함수 실행
+    # 함수 실행 (멀티턴: 여러 함수 순차 실행)
     results = []
     for function_call in function_calls:
         results.append(
-            ac_controller.execute_function(
+            home_controller.execute_function(
                 function_call["function_name"],
                 function_call["parameters"]
             )
@@ -236,7 +231,7 @@ async def websocket_endpoint(websocket: WebSocket):
     # 초기 상태 전송
     await websocket.send_text(json.dumps({
         "type": "state_update",
-        "state": ac_controller.state.to_dict()
+        "state": home_controller.state.to_dict()
     }))
 
     try:
@@ -251,51 +246,196 @@ async def websocket_endpoint(websocket: WebSocket):
         connected_clients.discard(websocket)
 
 
-# 직접 상태 변경 API (테스트/수동 조작용)
-@app.post("/ac/power/{action}")
-async def power_control(action: str):
-    """전원 제어"""
+# === 에어컨 직접 제어 API ===
+
+@app.post("/device/ac/power/{action}")
+async def ac_power_control(action: str):
+    """에어컨 전원 제어"""
     if action == "on":
-        return ac_controller.power_on()
+        return home_controller.ac_power_on()
     elif action == "off":
-        return ac_controller.power_off()
+        return home_controller.ac_power_off()
     else:
         raise HTTPException(status_code=400, detail="action must be 'on' or 'off'")
 
 
-@app.post("/ac/temperature/{temperature}")
-async def set_temp(temperature: int):
-    """온도 설정"""
-    return ac_controller.set_temperature(temperature)
+@app.post("/device/ac/temperature/{temperature}")
+async def ac_set_temp(temperature: int):
+    """에어컨 온도 설정"""
+    return home_controller.ac_set_temperature(temperature)
 
 
-@app.post("/ac/fan/{speed}")
-async def set_fan(speed: str):
-    """팬 속도 설정"""
-    return ac_controller.set_fan_speed(speed)
+@app.post("/device/ac/mode/{mode}")
+async def ac_set_mode(mode: str):
+    """에어컨 모드 설정"""
+    return home_controller.ac_set_mode(mode)
 
 
-@app.post("/ac/mode/{mode}")
-async def set_mode(mode: str):
-    """모드 설정"""
-    return ac_controller.set_mode(mode)
+@app.post("/device/ac/fan/{speed}")
+async def ac_set_fan(speed: str):
+    """에어컨 팬 속도 설정"""
+    return home_controller.ac_set_fan_speed(speed)
 
 
-@app.post("/environment")
-async def update_environment(update: EnvironmentUpdate):
-    """실내/외기 온도 업데이트"""
-    if update.indoor_temperature is None and update.outdoor_temperature is None:
-        raise HTTPException(
-            status_code=400,
-            detail="indoor_temperature 또는 outdoor_temperature 중 하나 이상 필요합니다."
-        )
+# === TV 직접 제어 API ===
 
-    return ac_controller.update_environment(
-        indoor_temperature=update.indoor_temperature,
-        outdoor_temperature=update.outdoor_temperature
-    )
+@app.post("/device/tv/power/{action}")
+async def tv_power_control(action: str):
+    """TV 전원 제어"""
+    if action == "on":
+        return home_controller.tv_power_on()
+    elif action == "off":
+        return home_controller.tv_power_off()
+    else:
+        raise HTTPException(status_code=400, detail="action must be 'on' or 'off'")
+
+
+@app.post("/device/tv/channel/{channel}")
+async def tv_set_channel(channel: int):
+    """TV 채널 설정"""
+    return home_controller.tv_set_channel(channel)
+
+
+@app.post("/device/tv/volume/{volume}")
+async def tv_set_volume(volume: int):
+    """TV 볼륨 설정"""
+    return home_controller.tv_set_volume(volume)
+
+
+@app.post("/device/tv/app/{app_name}")
+async def tv_launch_app(app_name: str):
+    """TV 앱 실행"""
+    return home_controller.tv_launch_app(app_name)
+
+
+# === 거실등 직접 제어 API ===
+
+@app.post("/device/light/power/{action}")
+async def light_power_control(action: str):
+    """거실등 전원 제어"""
+    if action == "on":
+        return home_controller.light_power_on()
+    elif action == "off":
+        return home_controller.light_power_off()
+    else:
+        raise HTTPException(status_code=400, detail="action must be 'on' or 'off'")
+
+
+@app.post("/device/light/brightness/{brightness}")
+async def light_set_brightness(brightness: int):
+    """거실등 밝기 설정"""
+    return home_controller.light_set_brightness(brightness)
+
+
+@app.post("/device/light/color_temp/{temp}")
+async def light_set_color_temp(temp: int):
+    """거실등 색온도 설정"""
+    return home_controller.light_set_color_temp(temp)
+
+
+# === 로봇청소기 직접 제어 API ===
+
+@app.post("/device/vacuum/command/{command}")
+async def vacuum_command(command: str):
+    """로봇청소기 명령"""
+    commands = {
+        "start": home_controller.vacuum_start,
+        "pause": home_controller.vacuum_pause,
+        "stop": home_controller.vacuum_stop,
+        "dock": home_controller.vacuum_return_dock,
+    }
+    if command in commands:
+        return commands[command]()
+    else:
+        raise HTTPException(status_code=400, detail="command must be 'start', 'pause', 'stop', or 'dock'")
+
+
+@app.post("/device/vacuum/zone/{zone}")
+async def vacuum_clean_zone(zone: str):
+    """로봇청소기 구역 청소"""
+    return home_controller.vacuum_clean_zone(zone)
+
+
+# === 오디오 직접 제어 API ===
+
+@app.post("/device/audio/power/{action}")
+async def audio_power_control(action: str):
+    """오디오 전원 제어"""
+    if action == "on":
+        return home_controller.audio_power_on()
+    elif action == "off":
+        return home_controller.audio_power_off()
+    else:
+        raise HTTPException(status_code=400, detail="action must be 'on' or 'off'")
+
+
+@app.post("/device/audio/volume/{volume}")
+async def audio_set_volume(volume: int):
+    """오디오 볼륨 설정"""
+    return home_controller.audio_set_volume(volume)
+
+
+@app.post("/device/audio/playback/{command}")
+async def audio_playback(command: str):
+    """오디오 재생 제어"""
+    commands = {
+        "play": home_controller.audio_play,
+        "pause": home_controller.audio_pause,
+        "stop": home_controller.audio_stop,
+    }
+    if command in commands:
+        return commands[command]()
+    else:
+        raise HTTPException(status_code=400, detail="command must be 'play', 'pause', or 'stop'")
+
+
+@app.post("/device/audio/playlist/{playlist}")
+async def audio_play_playlist(playlist: str):
+    """오디오 플레이리스트 재생"""
+    return home_controller.audio_play_playlist(playlist)
+
+
+# === 전동커튼 직접 제어 API ===
+
+@app.post("/device/curtain/command/{command}")
+async def curtain_command(command: str):
+    """전동커튼 명령"""
+    commands = {
+        "open": home_controller.curtain_open,
+        "close": home_controller.curtain_close,
+        "stop": home_controller.curtain_stop,
+    }
+    if command in commands:
+        return commands[command]()
+    else:
+        raise HTTPException(status_code=400, detail="command must be 'open', 'close', or 'stop'")
+
+
+@app.post("/device/curtain/position/{position}")
+async def curtain_set_position(position: int):
+    """전동커튼 위치 설정"""
+    return home_controller.curtain_set_position(position)
+
+
+# === 환풍기 직접 제어 API ===
+
+@app.post("/device/ventilation/power/{action}")
+async def ventilation_power_control(action: str):
+    """환풍기 전원 제어"""
+    if action == "on":
+        return home_controller.ventilation_power_on()
+    elif action == "off":
+        return home_controller.ventilation_power_off()
+    else:
+        raise HTTPException(status_code=400, detail="action must be 'on' or 'off'")
+
+
+@app.post("/device/ventilation/speed/{speed}")
+async def ventilation_set_speed(speed: str):
+    """환풍기 속도 설정"""
+    return home_controller.ventilation_set_speed(speed)
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=18080)
