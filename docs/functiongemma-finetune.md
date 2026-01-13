@@ -6,8 +6,18 @@
 
 ## 준비물
 - Hugging Face 토큰 (gated 모델 접근 필요)
+- `.env`에 토큰 설정 (`HUGGINGFACE_HUB_TOKEN` 또는 `HF_TOKEN`)
 - GPU 머신 (CUDA 또는 ROCm)
 - `training/requirements-train.txt` 설치
+
+## HF 토큰 설정
+`.env` 예시:
+```
+HUGGINGFACE_HUB_TOKEN=...
+HF_TOKEN=...
+```
+
+세션별 실패/성공 기록은 `docs/fine-tuning.md`에 정리합니다.
 
 ## 데이터 포맷 (JSONL)
 한 줄에 하나의 샘플을 넣습니다.
@@ -29,13 +39,18 @@
 ## 학습 실행 예시
 ```bash
 python training/finetune_lora.py \
-  --train_file training/data/train_ko_sample.jsonl \
+  --train_file training/data/train_home_ko.train.jsonl \
+  --eval_file training/data/train_home_ko.val.jsonl \
   --output_dir training/output_lora \
   --num_train_epochs 3 \
   --per_device_train_batch_size 2 \
   --gradient_accumulation_steps 8 \
   --learning_rate 1e-4
 ```
+
+로그 보존/자동 설정은 `training/run_finetune.sh`를 사용합니다. FP16은 `FG_USE_FP16=1`로 켤 수 있습니다.
+
+빠른 테스트용으로는 작은 샘플 JSONL을 별도로 만들어 사용해도 됩니다.
 
 ## 파인튜닝 후 추론 (CPU)
 ```python

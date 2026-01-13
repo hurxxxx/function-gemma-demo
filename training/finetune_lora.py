@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path.append(str(BACKEND_DIR))
 
-from ac_controller import AC_FUNCTION_SCHEMAS  # noqa: E402
+from home_controller import HOME_FUNCTION_SCHEMAS  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,6 +41,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora_r", type=int, default=16)
     parser.add_argument("--lora_alpha", type=int, default=32)
     parser.add_argument("--lora_dropout", type=float, default=0.05)
+    parser.add_argument(
+        "--attn_implementation",
+        default="eager",
+        choices=["eager", "sdpa", "flash_attention_2"],
+    )
     return parser.parse_args()
 
 
@@ -76,14 +81,14 @@ def _build_sample(
 
     prompt_inputs = processor.apply_chat_template(
         prompt_messages,
-        tools=AC_FUNCTION_SCHEMAS,
+        tools=HOME_FUNCTION_SCHEMAS,
         add_generation_prompt=True,
         return_dict=True,
         return_tensors="pt",
     )
     full_inputs = processor.apply_chat_template(
         messages,
-        tools=AC_FUNCTION_SCHEMAS,
+        tools=HOME_FUNCTION_SCHEMAS,
         add_generation_prompt=False,
         return_dict=True,
         return_tensors="pt",
@@ -141,7 +146,7 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     processor = AutoProcessor.from_pretrained(args.model_id, trust_remote_code=True)
-    tokenizer = processor.tokenizer
+    tokenizer = getattr(processor, "tokenizer", processor)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
@@ -149,7 +154,7 @@ def main() -> None:
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
         torch_dtype=dtype,
-        device_map="auto",
+        attn_implementation=args.attn_implementation,
         trust_remote_code=True,
     )
 
@@ -173,6 +178,8 @@ def main() -> None:
         task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, lora_config)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
 
     dataset = load_dataset("json", data_files=args.train_file)["train"]
 
@@ -201,7 +208,7 @@ def main() -> None:
         logging_steps=args.logging_steps,
         save_steps=args.save_steps,
         save_total_limit=args.save_total_limit,
-        evaluation_strategy="steps" if eval_dataset is not None else "no",
+        eval_strategy="steps" if eval_dataset is not None else "no",
         eval_steps=args.save_steps if eval_dataset is not None else None,
         fp16=args.fp16,
         bf16=args.bf16,

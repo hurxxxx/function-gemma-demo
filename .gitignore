@@ -21,3 +21,8 @@ dist/
 
 # Models cache
 .cache/
+
+# Training outputs (keep only README)
+training/output_lora/*
+!training/output_lora/README.md
+training/logs/
