@@ -15,3 +15,8 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 
 FunctionGemma usage notes: [docs/functiongemma-usage.md](docs/functiongemma-usage.md)
 FunctionGemma finetune guide: [docs/functiongemma-finetune.md](docs/functiongemma-finetune.md)
+
+## Development Server Ports
+- **Backend (FastAPI)**: http://localhost:18080
+- **Frontend (Vite)**: http://localhost:15173
+- Run `./run_all.sh` to start both servers together
