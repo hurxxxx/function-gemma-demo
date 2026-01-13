@@ -1,14 +1,20 @@
 import { useState, useCallback } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
-import { ACDisplay } from './components/ACDisplay';
 import { VoiceRecorder } from './components/VoiceRecorder';
-import { ManualControls } from './components/ManualControls';
 import { CommandLog, type LogEntry } from './components/CommandLog';
+import {
+  ACCard,
+  TVCard,
+  LightCard,
+  VacuumCard,
+  AudioCard,
+  CurtainCard,
+  VentilationCard
+} from './components/devices';
 import './App.css';
 
 function App() {
   const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  // Vite 프록시를 통해 WebSocket 연결 (포트 포워딩 호환)
   const wsUrl = `${wsProtocol}://${window.location.host}/ws`;
   const { state, connected } = useWebSocket(wsUrl);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -22,68 +28,80 @@ function App() {
       function_name: string;
       parameters: Record<string, unknown>;
     };
+    function_calls?: Array<{
+      function_name: string;
+      parameters: Record<string, unknown>;
+    }>;
     result?: {
       message?: string;
     };
+    results?: Array<{
+      message?: string;
+    }>;
   }) => {
     const newLog: LogEntry = {
       id: logId,
       timestamp: new Date(),
       input: result.transcription || result.input_text || '(음성 인식 실패)',
       functionCall: result.function_call,
-      result: result.result?.message || (result.success ? '성공' : '실패'),
+      functionCalls: result.function_calls,
+      result: result.results?.map(r => r.message).join(', ') || result.result?.message || (result.success ? '성공' : '실패'),
       success: result.success,
     };
 
-    setLogs(prev => [newLog, ...prev].slice(0, 10)); // 최근 10개만 유지
+    setLogs(prev => [newLog, ...prev].slice(0, 10));
     setLogId(prev => prev + 1);
   }, [logId]);
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>FunctionGemma Car A/C Demo</h1>
+        <div className="header-left">
+          <span className="home-icon">🏠</span>
+          <h1>스마트 홈</h1>
+        </div>
         <div className={`connection-status ${connected ? 'connected' : 'disconnected'}`}>
           {connected ? '연결됨' : '연결 끊김'}
         </div>
       </header>
 
       <main className="app-main">
-        <div className="left-panel">
-          <ACDisplay state={state} />
+        <section className="devices-grid">
+          <ACCard state={state.ac} disabled={!connected} />
+          <TVCard state={state.tv} disabled={!connected} />
+          <LightCard state={state.light} disabled={!connected} />
+          <VacuumCard state={state.vacuum} disabled={!connected} />
+          <AudioCard state={state.audio} disabled={!connected} />
+          <CurtainCard state={state.curtain} disabled={!connected} />
+          <VentilationCard state={state.ventilation} disabled={!connected} />
+        </section>
 
-          <ManualControls
-            state={state}
+        <section className="voice-control-section">
+          <VoiceRecorder
+            onResult={handleResult}
             disabled={!connected}
           />
-
-          <div className="voice-section">
-            <VoiceRecorder
-              onResult={handleResult}
-              disabled={!connected}
-            />
-          </div>
-
-          <div className="demo-hints">
+          <div className="voice-hints">
             <div className="hints-title">음성 명령 예시</div>
             <ul>
-              <li>"온도 올려줘" / "온도 내려줘"</li>
-              <li>"오늘 날씨가 덥네"</li>
-              <li>"아이들이 땀이 나네"</li>
-              <li>"여름철 적정 온도로 맞춰줘"</li>
-              <li>"바람 세게 해줘"</li>
-              <li>"에어컨 꺼줘"</li>
+              <li>"에어컨 온도 올려줘"</li>
+              <li>"TV 켜줘"</li>
+              <li>"거실등 밝기 50%"</li>
+              <li>"청소기 거실 청소해"</li>
+              <li>"커튼 닫아줘"</li>
+              <li>"넷플릭스 틀어줘"</li>
+              <li>"TV 켜고 조명 꺼줘"</li>
             </ul>
           </div>
-        </div>
+        </section>
 
-        <div className="right-panel">
+        <section className="command-log-section">
           <CommandLog logs={logs} />
-        </div>
+        </section>
       </main>
 
       <footer className="app-footer">
-        <p>FunctionGemma 기반 음성 에어컨 제어 데모</p>
+        <p>FunctionGemma 기반 홈 IoT 음성 제어 데모</p>
       </footer>
     </div>
   );

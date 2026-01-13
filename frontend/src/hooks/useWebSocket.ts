@@ -1,28 +1,107 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+// 개별 기기 상태 인터페이스
 export interface ACState {
   power: boolean;
   temperature: number;
-  indoor_temperature: number;
-  outdoor_temperature: number;
-  fan_speed: string;
   mode: string;
+  fan_speed: string;
+}
+
+export interface TVState {
+  power: boolean;
+  channel: number;
+  volume: number;
+  current_app: string | null;
+}
+
+export interface LightState {
+  power: boolean;
+  brightness: number;
+  color_temp: number;
+}
+
+export interface VacuumState {
+  power: boolean;
+  status: string;
+  current_zone: string | null;
+}
+
+export interface AudioState {
+  power: boolean;
+  volume: number;
+  playback: string;
+  current_playlist: string | null;
+}
+
+export interface CurtainState {
+  position: number;
+  status: string;
+}
+
+export interface VentilationState {
+  power: boolean;
+  speed: string;
+}
+
+// 전체 홈 상태 인터페이스
+export interface HomeState {
+  ac: ACState;
+  tv: TVState;
+  light: LightState;
+  vacuum: VacuumState;
+  audio: AudioState;
+  curtain: CurtainState;
+  ventilation: VentilationState;
 }
 
 interface WebSocketMessage {
   type: string;
-  state?: ACState;
+  state?: HomeState;
 }
 
-export function useWebSocket(url: string) {
-  const [state, setState] = useState<ACState>({
+// 초기 홈 상태
+const initialHomeState: HomeState = {
+  ac: {
     power: false,
     temperature: 24,
-    indoor_temperature: 26,
-    outdoor_temperature: 32,
-    fan_speed: 'auto',
     mode: 'cooling',
-  });
+    fan_speed: 'auto',
+  },
+  tv: {
+    power: false,
+    channel: 1,
+    volume: 30,
+    current_app: null,
+  },
+  light: {
+    power: false,
+    brightness: 100,
+    color_temp: 4000,
+  },
+  vacuum: {
+    power: false,
+    status: 'idle',
+    current_zone: null,
+  },
+  audio: {
+    power: false,
+    volume: 30,
+    playback: 'stopped',
+    current_playlist: null,
+  },
+  curtain: {
+    position: 100,
+    status: 'stopped',
+  },
+  ventilation: {
+    power: false,
+    speed: 'auto',
+  },
+};
+
+export function useWebSocket(url: string) {
+  const [state, setState] = useState<HomeState>(initialHomeState);
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);

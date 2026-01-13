@@ -9,10 +9,18 @@ interface CommandResult {
     function_name: string;
     parameters: Record<string, unknown>;
   };
+  function_calls?: Array<{
+    function_name: string;
+    parameters: Record<string, unknown>;
+  }>;
   result?: {
     message?: string;
     [key: string]: unknown;
   };
+  results?: Array<{
+    message?: string;
+    [key: string]: unknown;
+  }>;
   raw_output?: string;
   detected_language?: string;
 }
