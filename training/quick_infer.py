@@ -53,6 +53,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Quick LoRA inference check")
     parser.add_argument("--model_id", default="google/functiongemma-270m-it")
     parser.add_argument("--adapter_dir", default="training/output_lora")
+    parser.add_argument(
+        "--no_adapter",
+        action="store_true",
+        help="Disable loading LoRA adapter and run base model only",
+    )
     parser.add_argument("--prompt", action="append", default=[])
     parser.add_argument("--prompt_file", default=None)
     parser.add_argument("--max_new_tokens", type=int, default=256)
@@ -67,6 +72,16 @@ def parse_args() -> argparse.Namespace:
         choices=["fp32", "fp16", "bf16"],
     )
     parser.add_argument("--device", default=None)
+    parser.add_argument(
+        "--output_json",
+        default=None,
+        help="Write JSONL results to the given path",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress stdout output (useful with --output_json)",
+    )
     return parser.parse_args()
 
 
@@ -158,12 +173,19 @@ def main() -> None:
         attn_implementation=args.attn_implementation,
         trust_remote_code=True,
     )
-    model = PeftModel.from_pretrained(model, args.adapter_dir)
+    if not args.no_adapter:
+        model = PeftModel.from_pretrained(model, args.adapter_dir)
     model.to(device)
     model.eval()
 
     system_prompt = "\n".join(BASE_SYSTEM_PROMPT_LINES)
     prompts = read_prompts(args)
+
+    output_path = Path(args.output_json) if args.output_json else None
+    output_handle = None
+    if output_path:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_handle = output_path.open("w", encoding="utf-8")
 
     for idx, prompt in enumerate(prompts, start=1):
         messages = [
@@ -191,12 +213,28 @@ def main() -> None:
         output_text = tokenizer.decode(generated_ids, skip_special_tokens=False).strip()
         calls = parse_function_calls(output_text)
 
-        print("=" * 80)
-        print(f"[{idx}] USER: {prompt}")
-        print("RAW OUTPUT:")
-        print(output_text)
-        print("PARSED CALLS:")
-        print(json.dumps(calls, ensure_ascii=False, indent=2))
+        result = {
+            "index": idx,
+            "prompt": prompt,
+            "raw_output": output_text,
+            "parsed_calls": calls,
+            "model_id": args.model_id,
+            "adapter_dir": None if args.no_adapter else args.adapter_dir,
+        }
+
+        if output_handle:
+            output_handle.write(json.dumps(result, ensure_ascii=False) + "\n")
+
+        if not args.quiet:
+            print("=" * 80)
+            print(f"[{idx}] USER: {prompt}")
+            print("RAW OUTPUT:")
+            print(output_text)
+            print("PARSED CALLS:")
+            print(json.dumps(calls, ensure_ascii=False, indent=2))
+
+    if output_handle:
+        output_handle.close()
 
 
 if __name__ == "__main__":
