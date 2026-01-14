@@ -31,6 +31,9 @@ project. It also serves as a reproducibility checklist for similar tests.
 - Logs:
   - `training/logs/finetune_20260113_171141.log`
 
+## Raspberry Pi Test (CPU-only)
+- Full report: `docs/functiongemma-test-report-raspberrypi.md`
+
 ## How to Test
 1) Load adapter and run prompts
 ```bash
@@ -58,5 +61,6 @@ Remaining issues (minor for demo)
 
 ## Related
 - demo-commands.md
+- functiongemma-test-report-raspberrypi.md
 - functiongemma-test-prompts.txt
 - fine-tuning.md

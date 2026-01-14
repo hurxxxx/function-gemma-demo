@@ -31,6 +31,9 @@ English: [functiongemma-test-report.md](functiongemma-test-report.md)
 - Logs:
   - `training/logs/finetune_20260113_171141.log`
 
+## 라즈베리파이 테스트 (CPU 전용)
+- 상세 리포트: `docs/functiongemma-test-report-raspberrypi.ko.md`
+
 ## 테스트 방법
 1) 어댑터 로드
 ```bash
@@ -61,5 +64,6 @@ training/venv/bin/python training/quick_infer.py \
 
 ## 관련 문서
 - demo-commands.ko.md
+- functiongemma-test-report-raspberrypi.ko.md
 - functiongemma-test-prompts.txt
 - fine-tuning.ko.md
