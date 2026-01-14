@@ -1,3 +1,7 @@
+---
+base_model: google/functiongemma-270m-it
+library_name: peft
+---
 # FunctionGemma Home IoT LoRA Output
 
 Base model: google/functiongemma-270m-it
@@ -9,6 +13,12 @@ Artifacts moved out of the repo:
   - checkpoint-400, checkpoint-516
   - train.log
   - finetune_20260113_140359.log
+
+New runs can write directly to an external path:
+```
+FG_OUTPUT_DIR=/projects/function-gemma-demo-artifacts/finetune_YYYYMMDD_HHMMSS \
+  training/run_finetune.sh
+```
 
 Run summary (2026-01-13)
 - train file: training/data/train_home_ko.train.jsonl
@@ -28,3 +38,6 @@ Quick inference
 training/venv/bin/python training/quick_infer.py \
   --adapter_dir /projects/function-gemma-demo-artifacts/finetune_20260113_140359
 ```
+### Framework versions
+
+- PEFT 0.14.0

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-LOG_DIR="$ROOT/training/logs"
-OUT_DIR="$ROOT/training/output_lora"
+LOG_DIR="${FG_LOG_DIR:-$ROOT/training/logs}"
+OUT_DIR="${FG_OUTPUT_DIR:-$ROOT/training/output_lora}"
 TS="$(date +%Y%m%d_%H%M%S)"
 RUN_LOG="$LOG_DIR/finetune_${TS}.log"
 TAIL_LOG="$OUT_DIR/train.log"
@@ -41,7 +41,7 @@ export PYTHONFAULTHANDLER=1
 stdbuf -oL -eL "$ROOT/training/venv/bin/python" -u "$ROOT/training/finetune_lora.py" \
   --train_file "$ROOT/training/data/train_home_ko.train.jsonl" \
   --eval_file "$ROOT/training/data/train_home_ko.val.jsonl" \
-  --output_dir "$ROOT/training/output_lora" \
+  --output_dir "$OUT_DIR" \
   --num_train_epochs 3 \
   --max_seq_length 512 \
   --per_device_train_batch_size 1 \

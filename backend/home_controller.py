@@ -723,7 +723,23 @@ HOME_FUNCTION_SCHEMAS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "app_name": {"type": "string", "description": "앱 이름 (Netflix, YouTube 등)"}
+                    "app_name": {
+                        "type": "string",
+                        "enum": [
+                            "Netflix",
+                            "YouTube",
+                            "Disney+",
+                            "Wavve",
+                            "Tving",
+                            "TVING",
+                            "Watcha",
+                            "Coupang Play",
+                            "Amazon Prime",
+                            "Apple TV",
+                            "Laftel"
+                        ],
+                        "description": "앱 이름 (Netflix, YouTube 등)"
+                    }
                 },
                 "required": ["app_name"]
             }
@@ -778,11 +794,11 @@ HOME_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "light_set_color_temp",
-            "description": "거실등 색온도를 설정합니다 (2700K 따뜻한 ~ 6500K 시원한).",
+            "description": "거실등 색온도(켈빈)를 설정합니다 (2700K 따뜻한 ~ 6500K 시원한).",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "temp": {"type": "integer", "description": "색온도 (2700-6500K)"}
+                    "temp": {"type": "integer", "description": "색온도/켈빈 (2700-6500K)"}
                 },
                 "required": ["temp"]
             }
@@ -947,11 +963,11 @@ HOME_FUNCTION_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "curtain_set_position",
-            "description": "전동커튼 위치를 설정합니다 (0=닫힘, 100=열림).",
+            "description": "전동커튼 위치를 설정합니다 (0=닫힘, 100=열림, 퍼센트/프로).",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "position": {"type": "integer", "description": "위치 (0-100%)"}
+                    "position": {"type": "integer", "description": "위치 (0-100%, 퍼센트/프로)"}
                 },
                 "required": ["position"]
             }
