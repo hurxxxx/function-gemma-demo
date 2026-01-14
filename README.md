@@ -1,110 +1,83 @@
-# FunctionGemma Car A/C Voice Control Demo
+# FunctionGemma Home IoT Voice Control Demo
 
-FunctionGemma를 활용한 차량용 에어컨 음성 제어 데모 애플리케이션입니다.
+FunctionGemma를 활용한 스마트홈 IoT 음성/텍스트 제어 데모 애플리케이션입니다.
 
 ## 주요 기능
-
 - **음성 인식**: 한국어 음성 명령을 텍스트로 변환 (Whisper)
-- **자연어 → 함수 호출**: FunctionGemma가 자연어를 에어컨 제어 함수로 변환
-- **실시간 상태 동기화**: WebSocket으로 에어컨 상태 실시간 반영
-- **수동 컨트롤 & 환경 정보**: UI에서 직접 제어 + 실내/외기 온도 표시
+- **자연어 → 함수 호출**: FunctionGemma가 명령을 함수 호출로 변환
+- **멀티 기기 제어**: 7개 기기 동시 제어 지원
+- **실시간 상태 동기화**: WebSocket으로 상태 즉시 반영
 
-## 지원하는 음성 명령 예시
+## 지원 기기
+- 에어컨, TV, 거실등, 로봇청소기, 오디오, 전동커튼, 환풍기
 
-| 명령 | 동작 |
-|-----|------|
-| "온도 올려줘" | 온도 +2도 |
-| "온도 내려줘" | 온도 -2도 |
-| "오늘 날씨가 덥네" | 자동으로 온도 낮춤 |
-| "아이들이 땀이 나네" | 실내 온도 기준으로 냉방 강화 |
-| "여름철 적정 온도로 맞춰줘" | 25도로 설정 |
-| "바람 세게 해줘" | 팬 속도 high |
-| "에어컨 꺼줘" | 전원 off |
+## 데모 명령 모음
+- `docs/demo-commands.md`
 
-## 시스템 요구사항
+## 테스트 리포트
+- `docs/functiongemma-test-report.md`
+
+## 빠른 실행
+```bash
+./run_all.sh
+```
+
+- 백엔드: http://localhost:18080
+- 프론트엔드: http://localhost:15173
+
+## 수동 실행
 
 ### 백엔드
-- Python 3.10+
-- 최소 4GB RAM (8GB 권장)
-- 라즈베리파이4 지원
-
-### 프론트엔드
-- Node.js 18+
-- 최신 웹 브라우저 (마이크 접근 필요)
-
-## 설치 및 실행
-
-### 1. 백엔드 설치 및 실행
-
 ```bash
 cd backend
-
-# 가상환경 생성 및 활성화
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 의존성 설치 (첫 실행 시 모델 다운로드로 시간 소요)
+source venv/bin/activate
 pip install -r requirements.txt
-
-# 서버 실행
 python main.py
 ```
 
-백엔드 서버: http://localhost:8000
-
-### 2. 프론트엔드 설치 및 실행
-
+### 프론트엔드
 ```bash
 cd frontend
-
-# 의존성 설치
 npm install
-
-# 개발 서버 실행
 npm run dev
 ```
 
-프론트엔드: http://localhost:5173
+## LoRA 어댑터
+- `training/output_lora/adapter_model.safetensors`
+- `training/output_lora/adapter_config.json`
 
-## 프로젝트 구조
-
+## 프로젝트 구조 (요약)
 ```
 function-gemma-demo/
 ├── backend/
-│   ├── main.py              # FastAPI 앱 + WebSocket
-│   ├── ac_controller.py     # 에어컨 상태 관리
-│   ├── function_gemma.py    # FunctionGemma 모델 래퍼
-│   ├── speech_to_text.py    # Whisper STT
-│   └── requirements.txt
+│   ├── main.py
+│   ├── home_controller.py
+│   ├── function_gemma.py
+│   └── speech_to_text.py
 ├── frontend/
 │   ├── src/
 │   │   ├── App.tsx
-│   │   ├── components/
-│   │   │   ├── ACDisplay.tsx     # 에어컨 UI
-│   │   │   ├── VoiceRecorder.tsx # 음성 녹음
-│   │   │   └── CommandLog.tsx    # 명령 로그
-│   │   └── hooks/
-│   │       └── useWebSocket.ts   # WebSocket 훅
-│   └── package.json
-└── README.md
+│   │   └── components/devices/
+├── training/
+│   ├── finetune_lora.py
+│   ├── run_finetune.sh
+│   └── output_lora/
+└── docs/
 ```
 
 ## API 엔드포인트
-
 | 엔드포인트 | 메소드 | 설명 |
 |-----------|--------|------|
-| `/state` | GET | 현재 에어컨 상태 조회 |
+| `/state` | GET | 현재 홈 상태 조회 |
 | `/command/text` | POST | 텍스트 명령 처리 |
 | `/command/voice` | POST | 음성 파일 처리 |
 | `/ws` | WebSocket | 실시간 상태 업데이트 |
-| `/environment` | POST | 실내/외기 온도 업데이트 |
 
-## 기술 스택
-
-- **Backend**: FastAPI, WebSocket, Transformers
-- **AI Models**: FunctionGemma (270M), Whisper (base)
-- **Frontend**: React, TypeScript, Vite
+## 문서
+- `docs/functiongemma-usage.md`
+- `docs/functiongemma-finetune.md`
+- `docs/fine-tuning.md`
 
 ## 라이선스
-
 MIT License

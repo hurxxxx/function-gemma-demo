@@ -1,5 +1,7 @@
 # Fine-tuning Notes (Strix Halo 395 / gfx1151)
 
+Test report: docs/functiongemma-test-report.md
+
 ## Official references (ROCm Ryzen)
 - Compatibility matrix (Linux): https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/compatibility/compatibilityryz/native_linux/native_linux_compatibility.html
   - ROCm 7.1.1 supports gfx1150/gfx1151 (Ryzen AI Max+ 395 series)
@@ -105,11 +107,11 @@ Notable code-path settings:
 
 ## Logging and outputs
 - Per-run logs: `training/logs/finetune_YYYYMMDD_HHMMSS.log`
-- Append-only log: `training/output_lora/train.log`
+- Append-only log: `training/output_lora/train.log` (default)
 - PID file: `training/output_lora/finetune.pid`
 - Adapter output: `training/output_lora/adapter_model.safetensors`,
   `training/output_lora/adapter_config.json`
-- Stored artifacts (outside repo): `/projects/function-gemma-demo-artifacts/finetune_20260113_140359`
+- External backups (logs/checkpoints): `/projects/function-gemma-demo-artifacts/finetune_20260113_171141`
 
 ## Service tweaks
 To reduce GPU faults, `smbgate-backend.service` was disabled:
@@ -133,12 +135,12 @@ sudo systemctl disable --now smbgate-backend.service
   - FP16로 loss/grad NaN 발생 → 기본 실행은 FP32 (필요 시 `FG_USE_FP16=1`로 FP16 활성화).
 
 ## Latest run (completed)
-- Start time: 2026-01-13T14:03:59+09:00
+- Start time: 2026-01-13T17:11:41+09:00
 - Status: completed (FP32)
-- PID: 59783 (exited)
-- Log files: training/logs/finetune_20260113_140359.log, training/output_lora/train.log
+- PID: 225424 (exited)
+- Log files: training/logs/finetune_20260113_171141.log, /projects/function-gemma-demo-artifacts/finetune_20260113_171141/train.log
 - Output: training/output_lora/adapter_model.safetensors, training/output_lora/adapter_config.json
-- Final metrics: train_loss 0.0743384244, eval_loss 0.0255804248 (epoch 2.33), train_runtime 8453.7s
+- Final metrics: train_loss 0.0772939051, eval_loss 0.0261247084 (epoch 2.25), train_runtime 6274.1s
 - Notes: HF token sourced from `.env` via `training/run_finetune.sh`.
 
 ## Quick inference check
