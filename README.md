@@ -18,6 +18,7 @@ FunctionGemma-based smart home voice/text control demo.
 
 ## Test Report
 - docs/functiongemma-test-report.md
+- docs/functiongemma-test-report-raspberrypi.md
 
 ## Quick Start
 ```bash
@@ -73,6 +74,7 @@ function-gemma-demo/
 - docs/functiongemma-finetune.md
 - docs/fine-tuning.md
 - docs/functiongemma-test-report.md
+- docs/functiongemma-test-report-raspberrypi.md
 - docs/demo-commands.md
 
 ## License

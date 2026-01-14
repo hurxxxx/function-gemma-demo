@@ -18,6 +18,7 @@ FunctionGemma를 활용한 스마트홈 IoT 음성/텍스트 제어 데모입니
 
 ## 테스트 리포트
 - docs/functiongemma-test-report.ko.md
+- docs/functiongemma-test-report-raspberrypi.ko.md
 
 ## 빠른 실행
 ```bash
@@ -73,6 +74,7 @@ function-gemma-demo/
 - docs/functiongemma-finetune.ko.md
 - docs/fine-tuning.ko.md
 - docs/functiongemma-test-report.ko.md
+- docs/functiongemma-test-report-raspberrypi.ko.md
 - docs/demo-commands.ko.md
 
 ## 라이선스
