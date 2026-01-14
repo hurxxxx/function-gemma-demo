@@ -25,6 +25,7 @@ dist/
 # Training outputs (keep only README)
 training/output_lora/*
 !training/output_lora/README.md
+!training/output_lora/README.ko.md
 !training/output_lora/adapter_model.safetensors
 !training/output_lora/adapter_config.json
 training/logs/

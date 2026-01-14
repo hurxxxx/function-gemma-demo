@@ -1,11 +1,10 @@
-# Demo Commands
+# 데모 명령 모음
 
-Korean: [demo-commands.ko.md](demo-commands.ko.md)
+English: [demo-commands.md](demo-commands.md)
 
-These phrases are confirmed to work with the current demo adapter. Keep the
-phrasing as-is for stable results (commands are in Korean).
+아래 명령들은 이번 데모 모델에서 정상 동작이 확인된 표현들입니다.
 
-## Air Conditioner
+## 에어컨
 - "에어컨 켜줘"
 - "에어컨 꺼줘"
 - "에어컨 24도로 맞춰줘"
@@ -19,7 +18,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "에어컨 모드 난방으로"
 - "에어컨 모드 자동으로"
 
-## TV / Apps
+## TV / 앱
 - "TV 켜줘"
 - "TV 꺼줘"
 - "TV 9번 채널로"
@@ -34,7 +33,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "웨이브 켜줘"
 - "티빙 틀어줘"
 
-## Lights
+## 조명
 - "조명 켜줘"
 - "조명 꺼줘"
 - "조명 밝기 40으로"
@@ -42,7 +41,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "조명 밝기 10% 줄여"
 - "조명 밝기 15만큼 올려"
 
-## Curtains
+## 커튼
 - "커튼 열어줘"
 - "커튼 닫아줘"
 - "커튼 멈춰"
@@ -51,7 +50,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "커튼 50퍼센트로"
 - "커튼 100퍼센트로"
 
-## Ventilation Fan
+## 환풍기
 - "환풍기 켜줘"
 - "환풍기 꺼줘"
 - "환풍기 약으로"
@@ -59,7 +58,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "환풍기 강으로"
 - "환풍기 자동으로"
 
-## Audio
+## 오디오
 - "오디오 켜줘"
 - "오디오 꺼줘"
 - "오디오 볼륨 20으로"
@@ -69,7 +68,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "오디오 일시정지"
 - "오디오 정지"
 
-## Robot Vacuum
+## 로봇청소기
 - "청소 시작해"
 - "청소기 멈춰"
 - "청소기 일시정지"
@@ -79,7 +78,7 @@ phrasing as-is for stable results (commands are in Korean).
 - "침실 청소해"
 - "화장실 청소해줘"
 
-## Multi-device Commands
+## 복합 명령 (멀티 기기)
 - "로봇 청소기 끄고 환풍기 켜"
 - "TV 켜고 유튜브 실행해줘"
 - "TV 켜고 넷플릭스 틀어줘"
@@ -100,6 +99,6 @@ phrasing as-is for stable results (commands are in Korean).
 - "조명 끄고 커튼 닫고 환풍기 꺼"
 - "오디오 켜고 재생, 조명 30, 커튼 60%"
 
-## Related
-- functiongemma-test-report.md
-- fine-tuning.md
+## 관련 문서
+- functiongemma-test-report.ko.md
+- fine-tuning.ko.md

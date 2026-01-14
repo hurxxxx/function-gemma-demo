@@ -1,6 +1,6 @@
 # Fine-tuning Notes (Strix Halo 395 / gfx1151)
 
-Test report: docs/functiongemma-test-report.md
+Korean: [fine-tuning.ko.md](fine-tuning.ko.md)
 
 ## Official references (ROCm Ryzen)
 - Compatibility matrix (Linux): https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/compatibility/compatibilityryz/native_linux/native_linux_compatibility.html
@@ -111,7 +111,7 @@ Notable code-path settings:
 - PID file: `training/output_lora/finetune.pid`
 - Adapter output: `training/output_lora/adapter_model.safetensors`,
   `training/output_lora/adapter_config.json`
-- External backups (logs/checkpoints): `/projects/function-gemma-demo-artifacts/finetune_20260113_171141`
+- External backups (optional): use `FG_OUTPUT_DIR` to store logs/checkpoints outside the repo.
 
 ## Service tweaks
 To reduce GPU faults, `smbgate-backend.service` was disabled:
@@ -132,13 +132,13 @@ sudo systemctl disable --now smbgate-backend.service
   - Reduce max_seq_length to 512, batch size 1, grad accumulation 16.
   - Disable smbgate-backend service to avoid GPU page faults.
   - Use HSA_ENABLE_SDMA=0 and AOTriton experimental flag.
-  - FP16로 loss/grad NaN 발생 → 기본 실행은 FP32 (필요 시 `FG_USE_FP16=1`로 FP16 활성화).
+  - FP32 default (FP16 may produce NaNs).
 
 ## Latest run (completed)
 - Start time: 2026-01-13T17:11:41+09:00
 - Status: completed (FP32)
 - PID: 225424 (exited)
-- Log files: training/logs/finetune_20260113_171141.log, /projects/function-gemma-demo-artifacts/finetune_20260113_171141/train.log
+- Log files: training/logs/finetune_20260113_171141.log
 - Output: training/output_lora/adapter_model.safetensors, training/output_lora/adapter_config.json
 - Final metrics: train_loss 0.0772939051, eval_loss 0.0261247084 (epoch 2.25), train_runtime 6274.1s
 - Notes: HF token sourced from `.env` via `training/run_finetune.sh`.
@@ -147,3 +147,8 @@ sudo systemctl disable --now smbgate-backend.service
 ```bash
 training/venv/bin/python training/quick_infer.py --adapter_dir training/output_lora
 ```
+
+## Related
+- functiongemma-finetune.md
+- functiongemma-test-report.md
+- demo-commands.md
