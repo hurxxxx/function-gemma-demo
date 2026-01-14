@@ -179,12 +179,24 @@ body {
 .voice-control-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   padding: 40px;
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   gap: 24px;
+}
+
+.command-inputs {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(200px, 0.7fr) minmax(320px, 1.3fr);
+  gap: 28px;
+  align-items: center;
+}
+
+.command-inputs .voice-recorder {
+  justify-self: center;
 }
 
 .voice-hints {
@@ -267,6 +279,10 @@ body {
 
   .voice-control-section {
     padding: 24px;
+  }
+
+  .command-inputs {
+    grid-template-columns: 1fr;
   }
 
   .voice-hints ul {

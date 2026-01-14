@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { VoiceRecorder } from './components/VoiceRecorder';
+import { TextCommandInput } from './components/TextCommandInput';
 import { CommandLog, type LogEntry } from './components/CommandLog';
 import {
   ACCard,
@@ -77,12 +78,18 @@ function App() {
         </section>
 
         <section className="voice-control-section">
-          <VoiceRecorder
-            onResult={handleResult}
-            disabled={!connected}
-          />
+          <div className="command-inputs">
+            <VoiceRecorder
+              onResult={handleResult}
+              disabled={!connected}
+            />
+            <TextCommandInput
+              onResult={handleResult}
+              disabled={!connected}
+            />
+          </div>
           <div className="voice-hints">
-            <div className="hints-title">음성 명령 예시</div>
+            <div className="hints-title">명령 예시</div>
             <ul>
               <li>"에어컨 온도 올려줘"</li>
               <li>"TV 켜줘"</li>

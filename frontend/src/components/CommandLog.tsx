@@ -35,7 +35,7 @@ export function CommandLog({ logs }: CommandLogProps) {
     return (
       <div className="command-log empty">
         <div className="empty-message">
-          음성 명령 기록이 여기에 표시됩니다
+          명령 기록이 여기에 표시됩니다
         </div>
       </div>
     );

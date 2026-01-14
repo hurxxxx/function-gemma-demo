@@ -1,33 +1,15 @@
-/* Command Log - Terminal/HUD Style */
+/* Command Log - Warm ledger style for readability */
 .command-log {
   background:
-    linear-gradient(180deg, var(--bg-tertiary, #1a1a25) 0%, var(--bg-secondary, #12121a) 100%);
-  border: 1px solid rgba(255, 140, 0, 0.15);
-  border-radius: 12px;
-  padding: 24px;
-  color: var(--text-primary, #e8e8e8);
+    linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(212, 163, 115, 0.25);
+  border-radius: 16px;
+  padding: 28px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
   max-height: 500px;
   overflow-y: auto;
   position: relative;
-}
-
-/* Scanline effect overlay */
-.command-log::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
-  pointer-events: none;
-  border-radius: 12px;
 }
 
 .command-log.empty {
@@ -38,23 +20,21 @@
 }
 
 .empty-message {
-  font-family: 'Rajdhani', sans-serif;
-  color: var(--text-muted, #555566);
+  font-family: var(--font-body);
+  color: var(--text-muted);
   font-size: 14px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  opacity: 0.7;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
 }
 
 .log-header {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
-  color: var(--accent-warm, #ff8c00);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 140, 0, 0.2);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--accent-tertiary);
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(188, 108, 37, 0.2);
   position: relative;
 }
 
@@ -65,7 +45,7 @@
   left: 0;
   width: 60px;
   height: 2px;
-  background: var(--accent-warm, #ff8c00);
+  background: var(--accent-tertiary);
 }
 
 .log-entries {
@@ -75,12 +55,13 @@
 }
 
 .log-entry {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 16px;
-  border-left: 3px solid var(--accent-cool, #00c8ff);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 18px 20px;
+  border: 1px solid rgba(212, 163, 115, 0.18);
+  border-left: 4px solid var(--device-ventilation);
   position: relative;
-  animation: log-slide-in 0.4s ease-out;
+  animation: log-slide-in 0.35s ease-out;
 }
 
 @keyframes log-slide-in {
@@ -101,31 +82,31 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, var(--accent-cool, #00c8ff), transparent);
-  opacity: 0.3;
+  background: linear-gradient(90deg, rgba(129, 178, 154, 0.5), transparent);
+  opacity: 0.25;
 }
 
 .log-entry.success {
-  border-left-color: var(--status-success, #22cc88);
+  border-left-color: var(--status-success);
 }
 
 .log-entry.success::before {
-  background: linear-gradient(90deg, var(--status-success, #22cc88), transparent);
+  background: linear-gradient(90deg, rgba(129, 178, 154, 0.7), transparent);
 }
 
 .log-entry.error {
-  border-left-color: var(--status-error, #ff4466);
+  border-left-color: var(--status-error);
 }
 
 .log-entry.error::before {
-  background: linear-gradient(90deg, var(--status-error, #ff4466), transparent);
+  background: linear-gradient(90deg, rgba(224, 122, 95, 0.7), transparent);
 }
 
 .log-time {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
-  color: var(--text-muted, #555566);
-  letter-spacing: 1px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
   margin-bottom: 10px;
 }
 
@@ -140,56 +121,57 @@
 .log-result {
   display: flex;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
   flex-wrap: wrap;
   align-items: flex-start;
 }
 
 .label {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
-  color: var(--text-muted, #555566);
-  min-width: 45px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 52px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   padding-top: 2px;
 }
 
 .log-input .value {
-  font-family: 'Rajdhani', sans-serif;
-  color: var(--text-primary, #e8e8e8);
+  font-family: var(--font-body);
+  color: var(--text-primary);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .log-function .function-call {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  background: rgba(0, 200, 255, 0.1);
-  padding: 4px 10px;
-  border-radius: 4px;
-  color: var(--accent-cool, #00c8ff);
+  background: rgba(137, 180, 196, 0.15);
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #2d5b6a;
   font-size: 12px;
-  border: 1px solid rgba(0, 200, 255, 0.2);
+  border: 1px solid rgba(137, 180, 196, 0.3);
   word-break: break-all;
 }
 
 .log-result .value {
-  font-family: 'Rajdhani', sans-serif;
-  color: var(--status-success, #22cc88);
+  font-family: var(--font-body);
+  color: var(--status-success);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .log-entry.error .log-result .value {
-  color: var(--status-error, #ff4466);
+  color: var(--status-error);
 }
 
 /* Hover effect */
 .log-entry:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 1);
 }
 
 /* New entry highlight */
 .log-entry:first-child {
-  box-shadow: 0 0 20px rgba(0, 200, 255, 0.1);
+  box-shadow: 0 12px 20px rgba(212, 163, 115, 0.18);
 }
