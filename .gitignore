@@ -29,3 +29,7 @@ training/output_lora/*
 !training/output_lora/adapter_model.safetensors
 !training/output_lora/adapter_config.json
 training/logs/
+
+# Qwen3 QLoRA training outputs (large files)
+training/output_qwen3_qlora/
+training/output_qwen3_qlora_full/
